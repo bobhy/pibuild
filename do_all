@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -o xtrace
+
+SDM=/home/bob/src/raspi/sdm
+SDMWORK=/home/bob/src/raspi/sdmwork
+IMAGE=2022-04-04-raspios-bullseye-arm64-lite
+SDCARD=/dev/sdb
+
+cd $SDMWORK/work
+
+##unzip $SDMWORK/src/$IMAGE.zip
+xz --decompress --stdout $SDMWORK/src/$IMAGE.img.xz > ./$IMAGE.img
+
+# note customize network breaks apt, so do apt full-upgrade at the right time in custom script instead
+sudo $SDM/sdm $IMAGE.img --customize \
+    --disable piwiz,triggerhappy \
+    --svcdisable apt-daily.timer,apt-daily-upgrade \
+    --nowpa \
+    --ssh service \
+    --timezone Etc/GMT \
+    --locale en_US.UTF-8 \
+    --user skuser \
+    --uid 3300 \
+    --password-user fancy \
+    --password-same no \
+    --password-pi plain \
+    --apps "" \
+    --cscript ../src/skserv-sdm-customize \
+    --custom1 ../src/skuser \
+    --custom2 ../src/rest_of_system \
+    --poptions "noautoremove,noupgrade" \
+    --restart
+
+#sudo $SDM/sdm --burn $SDCARD \
+#    --hostname skserv \
+#    $IMAGE.img

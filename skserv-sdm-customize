@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+# skserv SDM customizations -- invoked by SDM
+
+# Global parameters -- only usable in phase 0
+SDM=/home/bob/src/raspi/sdm
+SDMWORK=/home/bob/src/raspi/sdmwork
+
+# staging area on *target* image
+SDMSTAGING=/usr/local/sdm/staging
+
+loadparams() {
+    local cf="/usr/local/sdm/sdm-cparse"
+    [ "$SDMNSPAWN" == "Phase0" ] && cf="/mnt/sdm/$cf"
+    source $cf
+    readparams
+}
+
+# cp-tree <fromdir> <todir>
+# copy all files under <fromdir> to corresponding relative path in <todir>,
+# creating any missing intermediate directories in the process.
+# this is unlike rsync
+# if intermediate directory already exists in <todir> it is left alone and the files from <fromdir> are copied under it.
+# this is unlike cp -r
+# both <fromdir> and <todir> must be specified, even if '.'
+# note <fromdir> and <todir> can be relative and are interpreted relative to $CWD if so.
+# I found the use of tar for this at: https://www.tech-recipes.com/unix/copy-files-and-directories-recursively-with-tar/
+
+cp-tree() {
+    (cd $1; tar --create --file - *) | (mkdir --parents $2/ ; cd $2/; tar --extract --overwrite --same-permissions --file -)
+
+}
+#
+# $1 is the phase: "0", "1", or "post-install"
+#
+phase=$1
+pfx="$(basename $0)"
+
+### --------------------- Helper functions ---------------------
+
+function customize-network () {
+
+# customize networking environment for raspberry pi server
+#
+# replace "classic" debian networking with systemd-networkd (for better or worse).
+# enable a wifi hotspot on wlan0, with a signature SSID and DHCP services for anyone who connects to it.
+# also enable a wifi client (supplicant) on wlan0.
+# this configuration and the recommendation to use systemd-networkd per: ## from: https://raspberrypi.stackexchange.com/questions/108592/use-systemd-networkd-for-general-networking/108593#108593
+#
+# runs in sdm phase 1, so the system image under construction is mounted at /
+# depends on files copied from host system in phase 0 and staged at /usr/local/sdm/staging in the target image
+#
+# Something about the systemd-networkd manipulations breaks subsequent use of apt, 
+# so this should be invoked after those operations.
+# it works OK for the duration of this function invocation, however.
+
+logtoboth "> $pfx Convert classic networking to systemd-networkd"
+apt -y --autoremove purge ifupdown dhcpcd dhcpcd5 isc-dhcp-client isc-dhcp-common rsyslog
+
+systemctl disable --now avahi-daemon libnss-mdns
+apt -y --autoremove purge avahi-daemon
+apt -y install libnss-resolve hostapd
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+apt-mark hold avahi-daemon dhcpcd dhcpcd5 ifupdown isc-dhcp-client isc-dhcp-common libnss-mdns openresolv raspberrypi-net-mods rsyslog
+
+# we'll run hostapd in accesspoint@wlan0.service rather than hostapd.service
+systemctl disable --now hostapd
+
+systemctl enable 'accesspoint@wlan0.service'
+systemctl enable systemd-networkd.service systemd-resolved.service
+
+}
+
+# install and enable support for canbus and canbus utilities to prove it's working
+#
+# the kernel module is already there, we have to configure the device 'can0' and 
+# create a network link so it can be used.
+
+function customize-canbus () {
+    logtoboth "> Configure CAN0, create socketCAN network link and install utilities"
+
+    apt -y install can-utils
+
+    cat >> '/boot/config.txt' <<EOF
+enable_uart=1
+dtparam=i2c_arm=on
+dtparam=spi=on
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25
+dtoverlay=spi-bcm2835-overlay
+EOF
+
+cat > /etc/systemd/system/socketcan-interface.service <<EOF
+[Unit]
+Description=SocketCAN interface can0 with a baudrate of 250000
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/ip link set can0 type can bitrate 250000 ; /sbin/ifconfig can0 up
+ExecReload=/sbin/ifconfig can0 down ; /sbin/ip link set can0 type can bitrate 250000 ; /sbin/ifconfig can0 up
+ExecStop=/sbin/ifconfig can0 down
+[Install]
+WantedBy=multi-user.target
+EOF
+
+chmod 644 /etc/systemd/system/socketcan-interface.service
+systemctl enable socketcan-interface.service
+
+}
+
+
+
+
+# ------------- Main script -----------------------
+
+if [ "$phase" == "0" ]
+then
+    #
+    # In Phase 0 all references to directories in the image
+    # must be preceded by /mnt/sdm. References not preceded
+    # by /mnt/sdm refer to the system on which sdm is running.
+    # Hence easy to copy additional files into the image.
+    #
+    loadparams
+    logtoboth "* $pfx Phase 0"
+    logfreespace "at start of $pfx Custom Phase 0"
+    
+    if [ "$myuser" != "" ]
+    then
+        # Copy in the files that I require everywhere
+        logtoboth "> $pfx Copy $myuser login files to /mnt/sdm/home/$myuser"
+        [ ! -d /mnt/sdm/home/$myuser ] && mkdir /mnt/sdm/home/$myuser
+
+        cp-tree $SDMWORK/src/$myuser /mnt/mnt/home/$myuser
+
+        ##cp -f -rT $SDMWORK/src/$myuser /mnt/sdm/home/$myuser    # -T copies .ssh subdir
+        [ -d /mnt/sdm/home/$myuser/bin ] && logtoboth "> $pfx ... copied binaries for $myuser"
+        [ -d /mnt/sdm/home/$myuser/.ssh ] && logtoboth "> $pfx ... copied .ssh files for $myuser"
+	
+	fi
+    
+    logtoboth "> $pfx Disable /mnt/sdm/etc/profile.d/wifi-check.sh and sshpwd.sh"
+    [ -f /mnt/sdm/etc/profile.d/wifi-check.sh ] && mv /mnt/sdm/etc/profile.d/wifi-check.sh /mnt/sdm/etc/profile.d/sdm.wifi-check.sh
+    [ -f /mnt/sdm/etc/profile.d/sshpwd.sh ] &&     mv /mnt/sdm/etc/profile.d/sshpwd.sh /mnt/sdm/etc/profile.d/sdm.sshpwd.sh
+
+    logtoboth "> $pfx Copy systemd services and network"
+    cp-tree $csrc /mnt/sdm/
+
+    logfreespace "at end of $pfx Custom Phase 0"
+    logtoboth "* $pfx Phase 0 Completed" 
+
+elif [ "$phase" == "1" ]
+then
+    #
+    # Phase 1 (in nspawn)
+    #
+    # In Phase 1 all references to directories in the image can be direct
+    #
+    loadparams
+    logtoboth "* $pfx Phase 1"
+    logfreespace "at start of $pfx Custom Phase 1"
+    
+    # note to self -- customize-network will break APT, run other customizations first.
+    apt -y update
+    apt -y full-upgrade
+    apt -y autoremove
+
+    # fixup user $myuser
+    chown --recursive $myuser: /home/$myuser
+
+    # fixup rest of system
+
+    customize-canbus
+    customize-network
+
+    logfreespace "at end of $pfx Custom Phase 1"
+    logtoboth "* $pfx Custom Phase 1 completed"
+else
+    #
+    # Post-install edits
+    #
+    loadparams
+    logtoboth "* $pfx Custom Phase post-install"
+    logfreespace "at start of $pfx Custom Phase post-install"
+    
+    logtoboth "> $pfx Nothing to do (yet)"
+
+fi
+exit 0

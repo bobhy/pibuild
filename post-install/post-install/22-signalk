@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+export SK_ROOT=~/sk
+
+# install signalk server 
+
+nvm use default
+
+sudo apt -y install libnss-mdns avahi-utils libavahi-compat-libdnssd-dev 
+npm install -g --unsafe-perm signalk-server -y
+
+signalk-server-setup
+
+
+
+

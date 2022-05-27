@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -o xtrace
+
+SDM=/home/bob/src/raspi/sdm
+SDMWORK=/home/bob/src/raspi/sdmwork
+IMAGE=2022-01-28-raspios-bullseye-arm64
+SDCARD=/dev/sdb
+
+cd $SDMWORK/work
+
+sudo $SDM/sdm --burn $SDCARD \
+    --hostname skserv \
+    $IMAGE.img
