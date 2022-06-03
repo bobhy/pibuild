@@ -1,0 +1,29 @@
+[Match]
+Name=ap0
+
+[Network]
+# Static IPV4 and IPV6 addresses for this bridged segment
+Address=192.168.12.1/24
+Address=::/64
+
+# bridge runs DHCP and MDNS, also advertises l2 connectivity via LLDP
+DHCPServer=yes
+MulticastDNS=yes
+LinkLocalAddressing=fallback
+LLMNR=no
+LLDP=routers-only
+EmitLLDP=yes
+IPMasquerade=both
+IPForward=yes
+ConfigureWithoutCarrier=yes
+IgnoreCarrierLoss=30s
+
+[DHCPServer]
+# server addr=1, first dhcp addr=200, last=254
+PoolOffset=199
+PoolSize=55
+
+
+
+
+

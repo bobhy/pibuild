@@ -1,0 +1,9 @@
+# for the upstream wifi client (managed by iwd, not wpa_supplicant)
+[Match]
+Name=wlan0
+
+[Network]
+DHCP=yes
+MulticastDNS=yes
+
+

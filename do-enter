@@ -1,6 +1,12 @@
 #!/bin/env -S "bash"
+sudo umount /dev/sdb{1,2}
+sudo mount /dev/sdb2 /media/bobhy/rootfs
+sudo mount /dev/sdb1 /media/bobhy/rootfs/boot
 sudo systemd-nspawn \
     -D /media/bobhy/rootfs \
     --bind-ro=/:/pibuild/fromhost \
     --bind=$PWD/from_image/:/pibuild/tohost \
     --boot single
+
+sudo ummount /dev/sdb{1,2
+}
