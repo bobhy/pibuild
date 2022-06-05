@@ -1,0 +1,13 @@
+[Match]
+Name=eth0
+
+[Network]
+DHCP=yes
+MulticastDNS=yes
+
+[DHCPv4]
+# Don't accept DHCP from ourselves!
+DenyList=192.168.12.1 192.168.13.1
+## No -- floods log with duplicate errors
+# check for duplicate IP address and send decline if we get one.
+##SendDecline=true

@@ -2,7 +2,7 @@
 target=.
 
 apt update
-apt install -y hostapd 
+apt install -y hostapd
 apt -y full-upgrade 
 
 rsync -arv --mkpath  /pibuild/fromsrc/ /
@@ -20,6 +20,6 @@ rfkill unblock wlan
 
 # let first startup of resolved symlink to /run/systemd/resolve/stub-resolv.conf
 mv -f /etc/resolv.conf{,.bak}
-ln -s /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
+ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 timedatectl set-timezone UTC
