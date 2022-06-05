@@ -1,0 +1,22 @@
+#!/bin/env -S "bash"
+
+# make our initialization script available to the container
+cp touchup.sh to_image
+
+# get inital image fiile and mount for nspawn
+xz --decompress --stdout 2022-04-04-raspios-bullseye-arm64-lite.img.xz > a.img
+loopfile=$(sudo losetup -Prf --show a.img)
+sudo mount ${loopfile}p2 /media/bobhy/rootfs
+sudo mount ${loopfile}p1 /media/bobhy/rootfs/boot
+
+# and run it.
+sudo systemd-nspawn \
+    -D /media/bobhy/rootfs \
+    --bind-ro=/:/pibuild/fromhost \
+    --bind=$PWD/from_image/:/pibuild/tohost \
+    --bind=$PWD/to_image/:/pibuild/fromsrc \
+    bash /pibuild/fromsrc/touchup.sh
+
+##sudo umount ${loopfile}p*
+
+##sudo losetup -d $loopfile

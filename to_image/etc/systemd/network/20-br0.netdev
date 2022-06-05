@@ -1,0 +1,11 @@
+[NetDev]
+Name=br0
+Kind=bridge
+# random MAC in locally administered group, courtesy of https://miniwebtool.com/mac-address-generator/
+MACAddress=3A:13:B5:DB:8C:7D
+
+
+[Bridge]
+# Don't attempt to learn mac addresses, and don't flood log with 'received packet on eth0 with own address as source address' messages
+# (where logged mac address is that of another port on the bridge!) See: https://www.freedesktop.org/software/systemd/man/systemd.netdev.html
+AgeingTimeSec=0

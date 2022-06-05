@@ -1,0 +1,30 @@
+[Match]
+Name=br0
+
+[Network]
+# Static IPV4 and IPV6 addresses for this bridged segment
+Address=192.168.13.1/24
+Address=::/64
+
+# bridge runs DHCP and MDNS, also advertises l2 connectivity via LLDP
+DHCPServer=yes
+MulticastDNS=yes
+LinkLocalAddressing=fallback
+LLMNR=no
+LLDP=routers-only
+EmitLLDP=yes
+IPMasquerade=yes
+IPForward=yes
+ConfigureWithoutCarrier=yes
+
+[Route]
+GatewayOnLink=yes
+Gateway=192.168.13.1
+Destination=192.168.0.0/10
+
+[DHCPServer]
+# server addr=1, first dhcp addr=200, last=254
+PoolOffset=199
+PoolSize=55
+EmitDNS=yes
+

@@ -1,7 +1,0 @@
-# noop for now
-## ap0 should have been created by udev rule when wlan0 activates (/etc/udev/rules.d/22-ap-interface.rules)
-#[Match]
-#Name=ap0
-#
-#[Network]
-#Bridge=br0

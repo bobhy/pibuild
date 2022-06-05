@@ -1,9 +1,13 @@
-# for the upstream wifi client (managed by iwd, not wpa_supplicant)
 [Match]
 Name=wlan0
 
 [Network]
-MulticastDNS=yes
 DHCP=yes
-LinkLocalAddressing=yes
+MulticastDNS=yes
 
+[DHCPv4]
+# Don't accept DHCP from ourselves!
+DenyList=192.168.12.1
+## No -- floods log with duplicate errors
+# check for duplicate IP address and send decline if we get one.
+##SendDecline=true
