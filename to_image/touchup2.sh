@@ -49,6 +49,7 @@ apt update
 
 apt install -y \
     mtr-tiny \
+    fail2ban \
     cockpit \
     can-utils \
     nodejs \

@@ -1,0 +1,8 @@
+[DEFAULT]
+bantimme = 1d
+findtime = 1d
+maxretry = 4
+
+[sshd]
+enabled = true
+backend = systemd
