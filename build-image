@@ -8,7 +8,22 @@ chmod a+x to_image/touchup*.sh
 
 # get inital image fiile and mount for nspawn
 xz --decompress --stdout 2022-04-04-raspios-bullseye-arm64-lite.img.xz > a.img
+
+# extend the root filesystem -- later steps will overflow 2G
+
+truncate --size=+2G a.img
+# resize 2nd partition (/root)
+echo ", +" | sudo sfdisk -N 2 a.img
+
+# attach the loop device
 loopfile=$(sudo losetup -Pf --show a.img)
+
+# clean up /root, then extend it to fill
+
+sudo e2fsck -pD -f ${loopfile}p2
+sudo resize2fs ${loopfile}p2
+
+
 sudo mount ${loopfile}p2 /media/bobhy/rootfs
 sudo mount ${loopfile}p1 /media/bobhy/rootfs/boot
 
@@ -25,6 +40,7 @@ passwd root
 simple
 simple
 passwd -u root
+echo skserv > /etc/hostname
 EOF
 
 # don't know how to run touchup from a script!

@@ -1,5 +1,6 @@
 #!/usr/bin/env -S "bash"
 
+hostname skserv
 adduser --add_extra_groups skuser
 adduser -q skuser sudo
 adduser -q skuser adm
@@ -13,7 +14,7 @@ adduser -q skuser gpio
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo bash -
 
 # prepare to get grafana
-
+# and grafna
 wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
 
 echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
@@ -28,7 +29,6 @@ apt install -y \
     nodejs \
     grafana
 
-
 npm install --location=global npm@latest
 
 npm install --location=global signalk-server
@@ -41,7 +41,7 @@ tar xvfz influxdb-1.8.10_linux_arm64.tar.gz
 cd influxdb-1.8.10-1
 rsync -arv --mkpath ./ /
 popd
-rm -rf temp
+rmdir -rf temp
 
 ### Start services
 

@@ -1,0 +1,10 @@
+#!/usr/bin/env -S "bash"
+
+# restart whatever image is currently mounted
+
+sudo systemd-nspawn --machine=aimage \
+    -D /media/bobhy/rootfs \
+    --bind-ro=/:/pibuild/fromhost \
+    --bind=$PWD/from_image/:/pibuild/tohost \
+    --bind=$PWD/to_image/:/pibuild/fromsrc \
+    --boot 
