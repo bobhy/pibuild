@@ -51,5 +51,3 @@ systemctl enable grafana
 
 echo "You will have to run 'sudo signalk-server-setup' to complete config for signal K and its service."
 
-
-
