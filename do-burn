@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -o xtrace
+
+sudo dd if=a.img of=/dev/sdb conv=fsync bs=4M status=progress
+
