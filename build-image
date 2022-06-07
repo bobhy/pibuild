@@ -41,6 +41,7 @@ simple
 simple
 passwd -u root
 echo skserv > /etc/hostname
+sed --in-place -e 's/raspberrypi/skserv/g' /etc/hosts
 EOF
 
 # don't know how to run touchup from a script!
