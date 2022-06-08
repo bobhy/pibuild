@@ -1,0 +1,12 @@
+[Service]
+ExecStart=/home/skserver/.signalk/signalk-server
+Restart=always
+StandardOutput=null
+StandardError=journal
+WorkingDirectory=/home/skserver/.signalk
+User=skserver
+Environment=EXTERNALPORT=80
+Environment=NODE_ENV=production
+Environment=RUN_FROM_SYSTEMD=true
+[Install]
+WantedBy=multi-user.target

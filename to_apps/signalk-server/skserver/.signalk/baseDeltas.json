@@ -1,0 +1,18 @@
+[
+  {
+    "context": "vessels.self",
+    "updates": [
+      {
+        "values": [
+          {
+            "path": "",
+            "value": {
+              "mmsi": "368185930",
+              "name": "Off Beat"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

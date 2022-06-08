@@ -1,0 +1,13 @@
+#!/usr/bin/env -S "bash"
+# set up signalk-server as though signalk-server-setup had beeen run
+
+adduser skserver --gecos ',,,,' <<EOF
+skserver
+skserver
+EOF
+
+rsync -arv --mkpath /pibuild/from_apps/signalk-server/skserver/ /home/skserver
+chown -r skserver /home/skserver
+
+rsync -arv --mkpath /pibuild/from_apps/signalk-server/root/ /
+
