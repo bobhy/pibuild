@@ -1,6 +1,10 @@
 #!/usr/bin/env -S "bash"
 
-adduser --add_extra_groups skuser
+adduser --add_extra_groups --gecos ',,,,' skuser <<EOF
+fancy
+fancy
+EOF
+
 adduser -q skuser sudo
 adduser -q skuser adm
 adduser -q skuser netdev
@@ -70,4 +74,4 @@ npm install --location=global signalk-server
 systemctl enable socketcan-interface influxdb grafana
 
 echo ""
-echo "core apps installed.  to set them up, see /pibuild/from_apps/*setup.sh"
+echo "core apps installed.  to set them up, see /pibuild/fromapps/*setup.sh"

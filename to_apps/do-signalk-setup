@@ -6,8 +6,8 @@ skserver
 skserver
 EOF
 
-rsync -arv --mkpath /pibuild/from_apps/signalk-server/skserver/ /home/skserver
+rsync -arv --mkpath /pibuild/fromapps/signalk-server/skserver/ /home/skserver
 chown -r skserver /home/skserver
 
-rsync -arv --mkpath /pibuild/from_apps/signalk-server/root/ /
+rsync -arv --mkpath /pibuild/fromapps/signalk-server/root/ /
 
