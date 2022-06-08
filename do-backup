@@ -1,0 +1,36 @@
+#!/usr/bin/env -S "bash"
+# pull a backup *from* a client machine
+# Excellent guide to array syntax, thanks to https://opensource.com/article/18/5/you-dont-know-bash-intro-bash-arrays
+
+# rsync option to delete stale data in backups?  With grace period?
+
+# assumes you have already set up public key auth for client_user on client_name
+
+client_name="skserv"
+client_user="root"
+dest="~/backups/${client_name}"
+
+client="${client_user}@${client_name}:"
+
+# dirs must be valid path syntax
+dirs=(              "/etc"  "/home/skuser"  "/home/skserver"    "/var/lib/influxdb")
+excluded_subdirs=(  "_foo_" "_foo_"         "_foo_"             "wal/***")
+
+for i in ${!dirs[@]};
+do
+    dir=${dirs[$i]}
+    exclDir=${excluded_subdirs[$i]}
+    # credit https://stackoverflow.com/questions/3963716/how-to-manually-expand-a-special-variable-ex-tilde-in-bash
+    # for bashism to handle ~ in script.  It takes a village to raise an idiot.
+    destDir=${dest/#\~/$HOME}${dir}
+    [ ! -d $destDir ] && mkdir --parents $destDir
+    # "simple" rsync command needed some hair for the system files:
+    # --atimes and --open-noatime to suppress: failed to set times on "/etc/."
+    # --omit-dir-times
+    echo ""
+    echo "Backing up ${client}${dir} . . ."
+    rsync --archive --acls --compress \
+        --exclude $exclDir \
+        --info=stats1,backup,del,name \
+        ${client}${dir}/  ${destDir}
+done

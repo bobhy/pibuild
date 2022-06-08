@@ -2,10 +2,6 @@
 
 set -o xtrace 
 
-# make a copy of the current initialization script available to the container
-cp to_image/touchup*.sh .
-chmod a+x to_image/touchup*.sh
-
 # get inital image fiile and mount for nspawn
 xz --decompress --stdout 2022-04-04-raspios-bullseye-arm64-lite.img.xz > a.img
 
@@ -34,6 +30,7 @@ sudo systemd-nspawn \
     --bind-ro=/:/pibuild/fromhost \
     --bind=$PWD/from_image/:/pibuild/tohost \
     --bind=$PWD/to_image/:/pibuild/fromsrc \
+    --bind=$PWD/to_apps:/pibuild/fromapps \
     --as-pid2 --pipe \
 /usr/bin/bash <<EOF
 passwd root
@@ -51,6 +48,7 @@ sudo systemd-nspawn --machine=aimage \
     --bind-ro=/:/pibuild/fromhost \
     --bind=$PWD/from_image/:/pibuild/tohost \
     --bind=$PWD/to_image/:/pibuild/fromsrc \
+    --bind=$PWD/to_apps/:/pibuild/fromapps \
     --boot 
     
 ##sleep 3
