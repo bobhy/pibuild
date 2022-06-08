@@ -43,6 +43,12 @@ wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
 
 echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
 
+# prepare to get influxdb 1.18
+
+wget -qO- https://repos.influxdata.com/influxdb.key | gpg --dearmor > /etc/apt/trusted.gpg.d/influxdb.gpg
+export DISTRIB_ID=$(lsb_release -si); export DISTRIB_CODENAME=$(lsb_release -sc)
+echo "deb [signed-by=/etc/apt/trusted.gpg.d/influxdb.gpg] https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" > /etc/apt/sources.list.d/influxdb.list
+
 # now do all the installs
 
 apt update
@@ -53,26 +59,15 @@ apt install -y \
     cockpit \
     can-utils \
     nodejs \
+    influxdb \
     grafana
 
-
 npm install --location=global npm@latest
-
 npm install --location=global signalk-server
-
-# manual install influxdb 1.8, the arm64 version.
-mkdir temp
-pushd temp
-wget https://dl.influxdata.com/influxdb/releases/influxdb-1.8.10_linux_arm64.tar.gz
-tar xvfz influxdb-1.8.10_linux_arm64.tar.gz
-cd influxdb-1.8.10-1
-rsync -arv --mkpath ./ /
-popd
-rm -rf temp
-
 
 ### Start services
 
 systemctl enable socketcan-interface influxdb grafana
 
-echo "You will have to run 'sudo signalk-server-setup' to complete config for signal K and its service."
+echo ""
+echo "core apps installed.  to set them up, see /pibuild/from_apps/*setup.sh"
