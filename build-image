@@ -25,6 +25,7 @@ sudo mount ${loopfile}p1 /media/bobhy/rootfs/boot
 
 
 # and run it.
+# a lot of manual config to get pi to resolve host name skserv (12.1) on the ap0 interface!
 sudo systemd-nspawn \
     -D /media/bobhy/rootfs \
     --bind-ro=/:/pibuild/fromhost \
@@ -39,6 +40,7 @@ simple
 passwd -u root
 echo skserv > /etc/hostname
 sed --in-place -e 's/raspberrypi/skserv/g' /etc/hosts
+echo "192.168.12.1  skserv" >> /etc/hosts
 EOF
 
 # don't know how to run touchup from a script!
