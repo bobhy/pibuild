@@ -60,11 +60,16 @@ apt update
 apt install -y \
     mtr-tiny \
     fail2ban \
-    cockpit \
+    cockpit 
+
+# Install things specifically for signalk: sysstat gets CPU resource use for SK raspi monitor; avahi stuff for mDNS discovery
+apt install -y \
     can-utils \
     nodejs \
     influxdb \
-    grafana
+    grafana \
+    sysstat \
+    libnss-mdns avahi-utils libavahi-compat-libdnssd-dev
 
 npm install --location=global npm@latest
 npm install --location=global signalk-server
